@@ -32,16 +32,22 @@ initial_theta = np.full(shape=(NUM_OF_GENS, LEN_MOTIF), fill_value=1 / NUM_OF_GE
 
 
 def EM(data=X, theta=initial_theta, thetaB=initial_thetaB):
+    likelyhood_function = np.zeros(shape=MAX_ITER, dtype=np.float64)
+    tol = 5e-5
     for _ in range(MAX_ITER):
         Q_0 = (1 - alpha) * np.prod(thetaB[data], axis=1)
         Q_1 = alpha * np.prod(theta[data, np.arange(LEN_MOTIF)], axis=1)
 
-
-        #likelyhood_function = np.sum(Q_0 * np.log(Q_0) + Q_1 * np.log(Q_1))
-
         common_denominator = Q_0 + Q_1
         Q_0 = Q_0 / common_denominator
         Q_1 = Q_1 / common_denominator
+
+        likelyhood_function[_] = np.sum(Q_0 * np.log(Q_0) + Q_1 * np.log(Q_1))
+        print(likelyhood_function[_])
+        if _ > 0 and np.abs(likelyhood_function[_] - likelyhood_function[_ - 1]) < np.abs(
+                tol * likelyhood_function[_ - 1]):
+            print("COVERAGE")
+            break
 
         lambda_Q_0 = LEN_MOTIF * np.sum(Q_0)
         lambda_Q_1 = np.sum(Q_1)
@@ -52,11 +58,11 @@ def EM(data=X, theta=initial_theta, thetaB=initial_thetaB):
             for col_index in range(LEN_MOTIF):
                 theta[row_index, col_index] = np.sum(Q_1[X_ind[:, col_index]]) / lambda_Q_1
 
-    return theta, thetaB
+    return theta, thetaB, likelyhood_function
 
 
 if __name__ == "__main__":
-    result_theta, result_theta_b = EM()
+    result_theta, result_theta_b, _ = EM()
 
     estimated_params = {
         "alpha": alpha,
