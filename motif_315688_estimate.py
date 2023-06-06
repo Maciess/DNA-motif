@@ -31,9 +31,10 @@ initial_thetaB = np.full(shape=NUM_OF_GENS, fill_value=1 / NUM_OF_GENS, dtype=np
 initial_theta = np.full(shape=(NUM_OF_GENS, LEN_MOTIF), fill_value=1 / NUM_OF_GENS, dtype=np.float64)
 
 
-def EM(data=X, theta=initial_theta, thetaB=initial_thetaB):
+def EM(data=X, theta=initial_theta, thetaB=initial_thetaB, estimate_alpha=False, tol=5e-5):
     likelyhood_function = np.zeros(shape=MAX_ITER, dtype=np.float64)
-    tol = 5e-5
+    alpha = 0.5
+
     for _ in range(MAX_ITER):
         Q_0 = (1 - alpha) * np.prod(thetaB[data], axis=1)
         Q_1 = alpha * np.prod(theta[data, np.arange(LEN_MOTIF)], axis=1)
@@ -48,6 +49,8 @@ def EM(data=X, theta=initial_theta, thetaB=initial_thetaB):
                 tol * likelyhood_function[_ - 1]):
             print("COVERAGE")
             break
+
+        alpha = np.sum(Q_1) / (np.sum(Q_1) + np.sum(Q_0)) if estimate_alpha else alpha
 
         lambda_Q_0 = LEN_MOTIF * np.sum(Q_0)
         lambda_Q_1 = np.sum(Q_1)

@@ -69,6 +69,5 @@ total_distance = 1 / (LEN_MOTIF + 1) * (
 print(total_distance)
 
 with open("bootstrap.csv", "a") as file:
-    # Write new content to the file
     file.write(str(total_distance))
     file.write('\n')
